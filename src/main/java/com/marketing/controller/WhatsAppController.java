@@ -20,11 +20,14 @@ public class WhatsAppController {
 	@Value("${users}")
 	private String users;
 
+	@Value("${numbers}")
+	private String numbers;
+
 	@Value("${message}")
 	private String message;
 
 	@GetMapping(value = "/whatsapp")
-	public ResponseEntity<Void> getAllEquipments() throws Exception {
+	public ResponseEntity<Void> sendWhatsapp() throws Exception {
 		// create a Chrome Web Driver
 
 		String os = System.getProperty("os.name").toLowerCase();
@@ -37,36 +40,6 @@ public class WhatsAppController {
 		}
 
 		WebDriver driver = new ChromeDriver();
-		// open the browser and go to open google.com
-		/*
-		 * driver.get("https://www.google.com");
-		 * 
-		 * 
-		 * driver.findElement(By.id("lst-ib")).sendKeys("Selenium");
-		 * driver.findElement(By.name("btnK")).click();
-		 * driver.manage().window().maximize();
-		 * 
-		 * // get the number of pages int size =
-		 * driver.findElements(By.cssSelector("[valign='top'] > td")).size(); for (int j
-		 * = 1; j < size; j++) { if (j > 1) {// we don't need to navigate to the first
-		 * page driver.findElement(By.cssSelector("[aria-label='Page " + j +
-		 * "']")).click(); // navigate to page number // j }
-		 * 
-		 * String pagesearch = driver.getCurrentUrl();
-		 * 
-		 * List<WebElement> findElements =
-		 * driver.findElements(By.xpath("//*[@id='rso']//h3/a"));
-		 * System.out.println(findElements.size());
-		 * 
-		 * for (int i = 0; i < findElements.size(); i++) { findElements =
-		 * driver.findElements(By.xpath("//*[@id='rso']//h3/a"));
-		 * findElements.get(i).click();
-		 * 
-		 * driver.navigate().to(pagesearch); JavascriptExecutor jse =
-		 * (JavascriptExecutor) driver; // Scroll vertically downward by 250 pixels
-		 * jse.executeScript("window.scrollBy(0,250)", ""); } }
-		 */
-		// driver.findElement(By.cssSelector("Body")).sendKeys(Keys.CONTROL+"t");
 		driver.get("https://web.whatsapp.com");
 		driver.manage().timeouts().implicitlyWait(1, TimeUnit.MINUTES);
 		for (String user : users.split(",")) {
@@ -79,6 +52,40 @@ public class WhatsAppController {
 		driver.findElement(By.xpath("//span//span[@data-icon='menu']")).click();
 		driver.manage().timeouts().implicitlyWait(20, TimeUnit.SECONDS);
 		driver.findElement(By.xpath("//div[@title='Log out']")).click();
+		return new ResponseEntity<Void>(HttpStatus.OK);
+
+	}
+
+	@GetMapping(value = "/message")
+	public ResponseEntity<Void> sendMessage() throws Exception {
+		// create a Chrome Web Driver
+
+		String os = System.getProperty("os.name").toLowerCase();
+		System.out.println(message);
+
+		if (os.contains("mac")) {
+			System.setProperty("webdriver.chrome.driver", System.getProperty("user.dir") + "/chromedriver");
+		} else {
+			System.setProperty("webdriver.chrome.driver", System.getProperty("user.dir") + "\\chromedriver.exe");
+		}
+
+		WebDriver driver = new ChromeDriver();
+		driver.get("https://messages.android.com/");
+		driver.manage().timeouts().implicitlyWait(20, TimeUnit.SECONDS);
+		driver.findElement(By.xpath("//div[@aria-label='New conversation']")).click();
+		Boolean firstElement = true;
+		for (String number : numbers.split(",")) {
+			if (firstElement) {
+				driver.findElement(By.xpath("//input[@type='text']")).sendKeys(number);
+				driver.findElement(By.xpath("//input[@type='text']")).sendKeys(Keys.ENTER);
+				firstElement = false;
+			} else {
+				driver.findElement(By.xpath("//span[contains(text(),'Add more people')]")).sendKeys(number);
+				driver.findElement(By.xpath("//span[contains(text(),'Add more people')]")).sendKeys(Keys.ENTER);
+			}
+		}
+		driver.findElement(By.xpath("//div[starts-with(@aria-label,'Type a text message to')]")).sendKeys(message);
+		driver.findElement(By.xpath("//div[starts-with(@aria-label,'Type a text message to')]")).sendKeys(Keys.ENTER);
 		return new ResponseEntity<Void>(HttpStatus.OK);
 
 	}
