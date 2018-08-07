@@ -26,6 +26,9 @@ public class WhatsAppController {
 	@Value("${message}")
 	private String message;
 
+	@Value("${series}")
+	private String series;
+
 	@GetMapping(value = "/whatsapp")
 	public ResponseEntity<Void> sendWhatsapp() throws Exception {
 		// create a Chrome Web Driver
@@ -40,15 +43,27 @@ public class WhatsAppController {
 		}
 
 		WebDriver driver = new ChromeDriver();
+
 		driver.get("https://web.whatsapp.com");
 		driver.manage().timeouts().implicitlyWait(1, TimeUnit.MINUTES);
 		for (String user : users.split(",")) {
 			driver.findElement(By.xpath("//input[@title='Search or start new chat']")).clear();
 			driver.findElement(By.xpath("//input[@title='Search or start new chat']")).sendKeys(user);
-			driver.findElement(By.xpath("//span[@class='matched-text']")).click();
+			// driver.findElement(By.xpath("//span[@class='matched-text']")).click();
+			driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+			driver.findElement(By.xpath("//div[contains(text(),'Chats')]")).click();
 			driver.findElement(By.xpath("//div[@class='_2S1VP copyable-text selectable-text']")).sendKeys(message);
 			driver.findElement(By.xpath("//div[@class='_2S1VP copyable-text selectable-text']")).sendKeys(Keys.ENTER);
 		}
+
+		// Code for series number send
+		for (String serie : series.split(",")) {
+			for (int i = 1; i <= 9; i++) {
+				String number = serie + String.valueOf(i);
+				System.out.println(number);
+			}
+		}
+
 		driver.findElement(By.xpath("//span//span[@data-icon='menu']")).click();
 		driver.manage().timeouts().implicitlyWait(20, TimeUnit.SECONDS);
 		driver.findElement(By.xpath("//div[@title='Log out']")).click();
