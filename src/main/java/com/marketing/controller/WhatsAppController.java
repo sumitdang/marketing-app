@@ -1,5 +1,7 @@
 package com.marketing.controller;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.openqa.selenium.By;
@@ -12,6 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import com.marketing.utilities.Constants;
+import com.marketing.utilities.TextUtils;
 
 @Controller
 @Configuration
@@ -28,6 +33,9 @@ public class WhatsAppController {
 
 	@Value("${series}")
 	private String series;
+
+	@Value("${skipnumbers}")
+	private String skipNumbers;
 
 	@GetMapping(value = "/whatsapp")
 	public ResponseEntity<Void> sendWhatsapp() throws Exception {
@@ -46,7 +54,7 @@ public class WhatsAppController {
 
 		driver.get("https://web.whatsapp.com");
 		driver.manage().timeouts().implicitlyWait(1, TimeUnit.MINUTES);
-		for (String user : users.split(",")) {
+		for (String user : users.split(Constants.COMMA)) {
 			driver.findElement(By.xpath("//input[@title='Search or start new chat']")).clear();
 			driver.findElement(By.xpath("//input[@title='Search or start new chat']")).sendKeys(user);
 			// driver.findElement(By.xpath("//span[@class='matched-text']")).click();
@@ -56,11 +64,17 @@ public class WhatsAppController {
 			driver.findElement(By.xpath("//div[@class='_2S1VP copyable-text selectable-text']")).sendKeys(Keys.ENTER);
 		}
 
+		List<String> skipNumbersList = Arrays.asList(skipNumbers.split(Constants.COMMA));
+
 		// Code for series number send
 		for (String serie : series.split(",")) {
-			for (int i = 1; i <= 9; i++) {
-				String number = serie + String.valueOf(i);
-				System.out.println(number);
+			for (int i = 1; i <= 99999; i++) {
+				String number = TextUtils.generatePhoneNumber(serie, String.valueOf(i));
+				for (String skip : skipNumbersList) {
+					if (number.contains(skip)) {
+						System.out.println(number + " is skipped");
+					}
+				}
 			}
 		}
 
@@ -89,7 +103,7 @@ public class WhatsAppController {
 		driver.manage().timeouts().implicitlyWait(20, TimeUnit.SECONDS);
 		driver.findElement(By.xpath("//div[@aria-label='New conversation']")).click();
 		Boolean firstElement = true;
-		for (String number : numbers.split(",")) {
+		for (String number : numbers.split(Constants.COMMA)) {
 			if (firstElement) {
 				driver.findElement(By.xpath("//input[@type='text']")).sendKeys(number);
 				driver.findElement(By.xpath("//input[@type='text']")).sendKeys(Keys.ENTER);
